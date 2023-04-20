@@ -1,0 +1,39 @@
+---
+- name: Provision backend virtual machine
+  hosts: backend
+  become: yes
+
+  tasks:
+    - name: Install the gpg key for Node.js LTS
+      apt_key:
+        url: 'https://deb.nodesource.com/gpgkey/nodesource.gpg.key'
+        state: present
+
+    - name: Install the Node.js LTS repos
+      apt_repository:
+        repo: 'deb https://deb.nodesource.com/node_18.x bullseye main'
+        state: present
+        update_cache: yes
+
+    - name: Install Node.js
+      apt:
+        name: nodejs
+        state: present
+
+    - name: Install Git
+      apt:
+        name: git
+        state: present
+
+    - name: Clone repository
+      command: git clone https://github.com/Wawrzynn/Chmury-assignment.git
+      args:
+        chdir: /home/vagrant
+
+    - name: Install backend dependencies
+      command: sudo npm install --no-bin-links
+      args:
+        chdir: /home/vagrant/Chmury-assignment/server
+
+    - name: Run Node server
+      shell: cd /home/vagrant/Chmury-assignment/server && nohup sudo node index.js >/dev/null 2>&1 &
